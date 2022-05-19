@@ -92,15 +92,20 @@ catch
 	$PSCmdlet.ThrowTerminatingError($_)
 }
 
+Write-Verbose -Message 'Retrieving releases before sorting'
+$Releases = $ApiResponse |
+	Sort-Object 'created_at' -Descending |
+	Select-Object 'name', 'tag_name', 'created_at', @{Label = 'version'; Expression = { [version] ($_.tag_name -replace '^v' -replace '\-rc(\d)+') } }
+
 $LatestRelease = if ($AllowPrerelease)
 {
-	Write-Verbose -Message 'Selecting latest release'
-	$ApiResponse | Sort-Object 'created_at' -Descending | Select-Object -First 1
+	Write-Verbose -Message 'Selecting latest release by release creation date'
+	$Releases | Sort-Object 'Version' -Descending | Select-Object -First 1
 }
 else
 {
 	Write-Verbose -Message 'Selecting latest non pre-release/rc version'
-	$ApiResponse | Where-Object 'name' -NotMatch 'rc' | Sort-Object 'created_at' -Descending | Select-Object -First 1
+	$Releases | Where-Object 'name' -NotMatch 'rc' | Sort-Object 'Version' -Descending | Select-Object -First 1
 }
 Write-Verbose -Message "Latest release: $($LatestRelease.tag_name)"
 #endregion
@@ -115,7 +120,7 @@ if (-not $DownloadDirectory)
 if (-not (Test-Path -LiteralPath $DownloadDirectory))
 {
 	Write-Verbose -Message "Creating downloading directory '$DownloadDirectory'"
-	[void] (New-Item -LiteralPath $DownloadDirectory -ItemType 'Directory')
+	[void] (New-Item -Path $DownloadDirectory -ItemType 'Directory')
 }
 
 try
