@@ -110,6 +110,43 @@ else
 Write-Verbose -Message "Latest release: $($LatestRelease.tag_name)"
 #endregion
 
+#region Retrieve installed version
+Write-Verbose -Message "Checking for existing installation: '$InstallLocation'"
+if (Test-Path -LiteralPath $InstallLocation)
+{
+	# Retrieve the version of the installed gitlab-runner.exe from $InstallLocation, regex it
+	# convert it to a string then cast it to a version so we can compare it to the retrieved release version
+	# (unless we've allowed pre-release tag then we're freewheeling a bit)
+	$InstalledVersion = [version] ((. $InstallLocation -v |
+		Select-String -Pattern '^Version\:.+$') -split ' +' |
+		Select-Object -Last 1).ToString()
+	Write-Verbose -Message "Existing installation: v$($InstalledVersion.ToString())"
+
+	if (($LatestRelease.version -le $InstalledVersion) -and
+		($LatestRelease.tag_name -notmatch '\-rc(\d)+'))
+	{
+		if ($Force)
+		{
+			Write-Verbose -Message 'Installed version already matches latest release. Installing anyway (-Force)'
+		}
+		else
+		{
+			Write-Verbose -Message 'Latest version is already installed!'
+			Break
+		}
+
+	}
+	elseif (($AllowPrerelease -eq $True) -and ($LatestRelease.tag_name -match '\-rc(\d)+'))
+	{
+		Write-Verbose -Message "Retrieved version is a prerelease and may supersede the installed version: $($LatestRelease.tag_name)"
+	}
+	else
+	{
+		Write-Warning -Message 'Unable to compare latest version and installed version.'
+	}
+}
+#endregion
+
 #region Download Prep
 $DownloadFile = "gitlab-runner-windows-amd64-$($LatestRelease.tag_name).exe"
 if (-not $DownloadDirectory)
@@ -214,16 +251,9 @@ if (-not (Test-Path -LiteralPath $Path))
 	[void] (New-Item -LiteralPath $Path -ItemType 'Directory')
 }
 
+# Upgrade Prep
 if (Test-Path -LiteralPath $InstallLocation)
 {
-	Write-Verbose -Message "Checking for existing installation: '$InstallLocation'"
-	if ($LatestRelease.tag_name -like "*$InstalledVersion")
-	{
-		if (-not $Force)
-		{
-			Write-Verbose -Message 'Latest version already installed!'
-		}
-	}
 	Write-Verbose -Message 'Retrieving file hash of existing installation'
 	$InstalledVersionHash = (Get-FileHash -LiteralPath $InstallLocation -Algorithm 'SHA256').Hash.ToLower()
 	if (($Null -ne $InstalledVersionHash) -and ($DownloadHash -eq $InstalledVersionHash))
