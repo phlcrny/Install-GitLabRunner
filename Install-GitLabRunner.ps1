@@ -225,7 +225,7 @@ if (Test-Path -LiteralPath $InstallLocation)
 		}
 	}
 	Write-Verbose -Message 'Retrieving file hash of existing installation'
-	$InstalledVersionHash = (Get-FileHash -LiteralPath $InstallLocation -Algorithm 'SHA256').Hash
+	$InstalledVersionHash = (Get-FileHash -LiteralPath $InstallLocation -Algorithm 'SHA256').Hash.ToLower()
 	if (($Null -ne $InstalledVersionHash) -and ($DownloadHash -eq $InstalledVersionHash))
 	{
 		Write-Warning -Message 'Current and downloaded hashes match'
