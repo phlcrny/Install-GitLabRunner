@@ -1,8 +1,6 @@
 # Install-GitLabRunner
 
-Automatically install or update gitlab-runner on Windows with hash-checking and optional backup of existing installs using Windows Powershell.
-
-You might be able to get it to work on Powershell 6+ but I've not tried.
+Automatically install or update gitlab-runner on Windows with hash-checking and optional backup of existing installs using Powershell.
 
 ## Usage
 
