@@ -278,7 +278,7 @@ if (Test-Path -LiteralPath $InstallLocation)
 		{
 			$ServiceAlreadyInstalled = $True
 			Write-Verbose -Message 'Retrieving installed service'
-			$InstalledService = Get-CimInstance -Query "SELECT * FROM Win32_Service WHERE name='gitlab-runner'" | Where-Object 'PathName' -Match 'gitlab-runner'
+			$InstalledService = Get-CimInstance -Query "SELECT * FROM Win32_Service WHERE name='gitlab-runner'" -Verbose:$False | Where-Object 'PathName' -Match 'gitlab-runner'
 			# Extract the service/installation path from the PathName property which also contains arguments etc.
 			# We would just split on spaces and drop quotes then take the first element as the path, but 'Program Files' is likely to screw us, so we'll work around that.
 			# This is still fragile to say the least but I'm comfortable making assumptions on paths and accepting edge cases for now.
