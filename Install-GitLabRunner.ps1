@@ -271,12 +271,6 @@ if (Test-Path -LiteralPath $InstallLocation)
 			Write-Verbose -Message 'Continuing with install as Force is specified'
 		}
 	}
-	else
-	{
-		Write-Verbose -Message 'Current and downloaded hashes match. Installing downloaded version'
-		Write-Verbose -Message "Current: $InstalledVersionHash"
-		Write-Verbose -Message "Download: $DownloadHash"
-	}
 
 	if (Get-Service -Name 'gitlab-runner')
 	{
